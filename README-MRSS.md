@@ -7,20 +7,42 @@ the poses of April Tags in the environment using a RealSense camera and some odo
 to the ```tf``` topic.
 ## Installation Instructions
 
+### TagSLAM
 Follow the installation instructions in the original [TagSLAM README](https://github.com/sachaMorin/tagslam_root). Keep in 
 mind TagSLAM relies on a lot of submodules. Make sure to clone them. Install TagSLAM on your computer (not the robot).
 
+### Realsense Camera
 Then install the [Realsense ROS 1 Wrapper](https://github.com/IntelRealSense/realsense-ros/tree/ros1-legacy). 
 
-## Usage
+### Go1 Twist Controller
+The Go1 already has a ```cmd_vel``` topic, but it appears to be unresponsive.
 
-The main launch file can be called as follows
+For high-level Go1 twist controls with ROS, we need the [go1-math-motion](https://github.com/dbaldwin/go1-math-motion) repo. Run the following in ```tagslam_root/src```:
 ```shell
-roslaunch tagslam mrss_laptop.launch rviz:=1 goal:=0
+git clone https://github.com/dbaldwin/go1-math-motion.git
+git clone -b v3.8.0 https://github.com/unitreerobotics/unitree_legged_sdk
+cd ~/tagslam_root
+catkin_make
 ```
-`rviz:=1` enables visualization. `goal:=1` activates a pointnav follower to reach a specific
-pose in the map (See the [pointnav](https://github.com/sachaMorin/tagslam_root/tree/master/src/pointnav) code). The follower
-has only been tested on a Jackal robot and doesn't currently work on the Go1.
+This will allow us to spin up an interface between the ```cmd_vel``` topic and the SDK, allowing twist controls.
+
+Finally, make sure to build.
+```shell
+cd ~/tagslam_root
+catkin_make
+```
+
+## Usage
+In any terminal where you need to use TagSLAM, you should run
+```shell
+source ~/tagslam_root/devel/setup.bash
+```
+
+Then you can call the main launch file as follows
+```shell
+roslaunch tagslam mrss_laptop.launch rviz:=1
+```
+`rviz:=1` enables visualization. 
 
 ```mrss_laptop``` will launch appropriate April Tag detection and SLAM nodes and broadcast transforms to the ```tf``` topic.
 
@@ -45,6 +67,9 @@ There are a few relevant files.
 - ```src/tagslam/example/camera_jackal.yaml```: Camera intrinsics and topics. See instructions [here](https://berndpfrommer.github.io/tagslam_web/intrinsic_calibration/).
 - ```src/tagslam/example/camera_poses.yaml```: Camera extrinstics, i.e. ```cam0``` to ```rig```.
 - ```src/tagslam/launch/apriltag_detector_node.launch```: April Tag detector node. This has to be changed if we move from raw to compressed images.
+ 
+##  Using the demo ROS bag
+TODO
 
 ## Camera Calibration
 You may need to calibrate the camera following the instructions [here](https://berndpfrommer.github.io/tagslam_web/intrinsic_calibration/). The following command may be useful
@@ -53,30 +78,6 @@ You may need to calibrate the camera following the instructions [here](https://b
 rosrun camera_calibration cameracalibrator.py --size 6x4 --square 0.108 image:=/camera/color/image_raw --no-service-check
 ```
 
-## Go1 Twist Controller
-The Go1 already has a ```cmd_vel``` topic, but it appears to be unresponsive.
-
-For high-level Go1 twist controls with ROS, we can use the [go1-math-motion](https://github.com/dbaldwin/go1-math-motion) repo. Run the following in ```tagslam_root/src```:
-```shell
-git clone https://github.com/dbaldwin/go1-math-motion.git
-git clone -b v3.8.0 https://github.com/unitreerobotics/unitree_legged_sdk
-cd ~/tagslam_root
-catkin_make
-```
-Then add the following node to a launch file
-```xml
-<node pkg="go1-math-motion" type="twist_sub" name="node_twist_sub" output="screen"/>
-```
-This will spin up an interface between the ```cmd_vel``` topic and the SDK, allowing twist controls.
-
-
-## pointnav Package
-A simple goal follower adapted from the tf turtlesim tutorial. By default, the robot will attempt
-to go in front of `board0`. A parameter controls the goal object and can be changed with
-```shell
-rosparam set /pointnav/goal_object board1
-```
-The package can be easily modified to reach a specific point in the `map` frame.
 
 ## go1_odom Package
 We did not manage to extract odometry from the current ROS topics on the Go1. It's probably available via lcm. As a temporary fix,
@@ -94,16 +95,12 @@ installs will fail. To solve this, run the following
 ```shell
 rosrun tagslam_viz make_tags.py --file ~/tagslam_root/src/tagslam/example/tagslam_mrss.yaml --mesh_dir ~/tagslam_root/src/tagslam_viz/tags/36_11
 ```
-and update the tag links (careful not to delete camera and goal links) in the `src/tagslam/example/urdf/camera.urdf` file. This is also where you can define additional 3D models.
+and update the tag links (be careful not to delete camera and goal links) in the `src/tagslam/example/urdf/camera.urdf` file. This is also where you can define additional 3D models.
 
 
 
 ## To-Dos
-Some stuff that I think is more important::
-- Properly mount the camera on the Go1.
-- Setup the other Go1.
-
-Some stuff that is less important:
+Some non-blocking to-dos:
 - There's no link between the odom and map trees. Maybe figure out one to have the pose of all the robot components int the map frame?
 - Fix the path problem in URDFs
 - Make more obstacles.

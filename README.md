@@ -33,14 +33,14 @@ Clone the full repo including all submodules, into a a new catkin
 workspace (``tagslam_root``):
 
     cd ~
-    git clone --recursive https://github.com/berndpfrommer/tagslam_root.git
+    git clone --recursive https://github.com/sachaMorin/tagslam_root.git
 
 ### For Ubuntu 18.04 and later:
 Configure and compile:
 
     cd ~/tagslam_root
     catkin config -DCMAKE_BUILD_TYPE=Release
-    catkin build
+    catkin_make
 
 ## For Ubuntu 16.04:
 Ubuntu 16.04 lacks support for C++ standard 17, so you need to install

@@ -69,7 +69,11 @@ There are a few relevant files.
 - ```src/tagslam/launch/apriltag_detector_node.launch```: April Tag detector node. This has to be changed if we move from raw to compressed images.
  
 ##  Using the demo ROS bag
-TODO
+You can download a demo bag [here](https://drive.google.com/file/d/1dtGW4ajMcIU0OFmfhAPx2s4sGFXasphg/view?usp=sharing).
+You can play it using standard ROS commands or our launch file
+```shell
+roslaunch tagslam play_bag.launch bag_path:=$ABSOLUTE_PATH_TO_BAG rviz:=1
+```
 
 ## Camera Calibration
 You may need to calibrate the camera following the instructions [here](https://berndpfrommer.github.io/tagslam_web/intrinsic_calibration/). The following command may be useful
